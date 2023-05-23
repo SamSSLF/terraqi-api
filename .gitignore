@@ -1,3 +1,5 @@
 weather_forecasts/
 venv/
 secret_key.pem
+.vscode/
+__pycache__/
