@@ -1,4 +1,6 @@
-weather_forecasts/
+*.grib
+*.nc
+*.idx
 venv/
 secret_key.pem
 .vscode/
