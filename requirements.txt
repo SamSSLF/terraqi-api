@@ -9,3 +9,5 @@ xgboost==1.7.5
 numpy
 pandas
 scikit-learn
+eccodes
+gunicorn
