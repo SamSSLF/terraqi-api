@@ -1,0 +1,3 @@
+weather_forecasts/
+venv/
+secret_key.pem
