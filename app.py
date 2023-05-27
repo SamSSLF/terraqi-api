@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def welcome():
-    return jsonify({'message': 'TerraQi API'})
+    return jsonify({'message': 'Welcome to TerraQi API'})
 
 
 @app.route('/windfc', methods=['POST'])
