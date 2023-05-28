@@ -55,3 +55,16 @@ def get_windfc(df):
     most_recent_forecast = df.drop(columns=['sp', 'msl', 'wind_speed', 'wind_direction', 't2m'])
 
     return most_recent_forecast.to_json()
+
+def is_outside_uk(latitude, longitude):
+    # Define the boundaries of the UK
+    uk_latitude_min = 50.0
+    uk_latitude_max = 60.0
+    uk_longitude_min = -10.0
+    uk_longitude_max = 2.0
+
+    # Check if the given latitude and longitude are outside the UK boundary
+    if latitude < uk_latitude_min or latitude > uk_latitude_max or longitude < uk_longitude_min or longitude > uk_longitude_max:
+        return True
+    else:
+        return False
