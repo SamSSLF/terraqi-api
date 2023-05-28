@@ -48,6 +48,10 @@ def get_windfc(df):
     # Make predictions
     df['windpower_fc'] = model.predict(df)
 
+    # Predictions between 0 and 1 only
+    df['windpower_fc'] = df['windpower_fc'].apply(lambda x: 1 if x > 1 else x)
+    df['windpower_fc'] = df['windpower_fc'].apply(lambda x: 0 if x < 0 else x)
+
     most_recent_forecast = df.drop(columns=['sp', 'msl', 'wind_speed', 'wind_direction', 't2m'])
 
     return most_recent_forecast.to_json()
