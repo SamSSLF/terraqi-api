@@ -74,7 +74,7 @@ def get_windfc(df):
     Parameters:
 
     df (DataFrame): The input DataFrame containing the necessary features for wind power forecasting.
-    
+
     Returns:
 
     most_recent_forecast (DataFrame): The modified DataFrame with the most recent wind power forecast.
@@ -106,7 +106,7 @@ def is_outside_uk(latitude, longitude):
 
     latitude (float): The latitude coordinate to check.
     longitude (float): The longitude coordinate to check.
-    
+
     Returns:
 
     True if the given latitude and longitude coordinates are outside the UK boundary.
@@ -125,6 +125,19 @@ def is_outside_uk(latitude, longitude):
         return False
 
 
+def get_power_rating(value, quantiles):
+    if value <= quantiles[0.2]:
+        return 1
+    elif value <= quantiles[0.4]:
+        return 2
+    elif value <= quantiles[0.6]:
+        return 3
+    elif value <= quantiles[0.8]:
+        return 4
+    else:
+        return 5
+
+
 def get_daily_windfc(df):
     '''
     The get_daily_windfc() function takes a Pandas DataFrame as input, which includes a column named 'windpower_fc' representing 
@@ -134,7 +147,7 @@ def get_daily_windfc(df):
     Parameters:
 
     df (DataFrame): The input DataFrame containing wind power forecast values.
-    
+
     Returns:
 
     daily_average_df (DataFrame): A new DataFrame containing the daily average wind power forecast values and their corresponding power ratings.
@@ -145,11 +158,44 @@ def get_daily_windfc(df):
     # Convert the daily_average Series to a DataFrame
     daily_average_df = daily_average.to_frame(name='average')
 
+    # Compute quantiles of daily average capacity factor
+    quantiles = daily_average_df['average'].quantile([0.2, 0.4, 0.6, 0.8])
+
     # Assign power ratings based on average values
-    daily_average_df['power_rating'] = pd.cut(daily_average_df['average'], bins=[
-                                              0, 0.2, 0.4, 0.6, 0.8, 1.0], labels=[1, 2, 3, 4, 5])
+    daily_average_df['power_rating'] = daily_average_df['average'].apply(
+        get_power_rating, args=(quantiles,))
 
     # Convert the index to a string representation of the dates
     daily_average_df.index = daily_average_df.index.strftime('%Y-%m-%d')
 
     return daily_average_df
+
+
+def get_daily_energy(df, turbine_rated_power):
+    '''
+    Inputs:
+    'df' : A pandas DataFrame that represents the most recent forecast time series of wind power capacity factor values (windpower_fc). The DataFrame should be indexed by time.
+    'power_rating': An integer value that represents the rated power output of the wind turbine in watts.
+
+    Returns: 
+    A pandas dataframe with a row for each day, a column of average daily energy values in Watt Hours, and a column for power rating.
+    '''
+    # Create a new column with power data
+    df['Power'] = df['windpower_fc'] * turbine_rated_power
+
+    # Resample the power data daily, applying the trapezoidal rule
+    df_daily_energy_Wh = df['Power'].resample(
+        'D').apply(lambda x: np.trapz(x, dx=3))
+
+    # Convert Series to Dataframe
+    df_daily_energy_Wh = df_daily_energy_Wh.to_frame('AvgEnergy_Wh')
+
+    # Compute quantiles of daily average capacity factor
+    quantiles = df_daily_energy_Wh['AvgEnergy_Wh'].quantile(
+        [0.2, 0.4, 0.6, 0.8])
+
+    # Add a new column with power rating
+    df_daily_energy_Wh['PowerRating'] = df_daily_energy_Wh['AvgEnergy_Wh'].apply(
+        get_power_rating, args=(quantiles,))
+
+    return df_daily_energy_Wh

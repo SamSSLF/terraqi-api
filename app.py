@@ -38,5 +38,21 @@ def get_daily_fc():
     return result
 
 
+@app.route('/windfc/daily/energy', methods=['POST'])
+def get_daily_energy():
+    latitude = request.json['lat']
+    longitude = request.json['lon']
+    turbine_rated_power = request.json['turbine_rated_power']
+
+    if is_outside_uk(latitude, longitude):
+        abort(400, "Queried coordinates are beyond the geographical scope of this dataset.")
+
+    df = interp_inputs(latitude, longitude)
+    df = get_windfc(df)
+    result = get_daily_windfc(df, turbine_rated_power).to_json(orient='index')
+    
+    return result
+
+
 if __name__ == '__main__':
     app.run()
