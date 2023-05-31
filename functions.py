@@ -198,4 +198,7 @@ def get_daily_energy(df, turbine_rated_power):
     df_daily_energy_Wh['PowerRating'] = df_daily_energy_Wh['AvgEnergy_Wh'].apply(
         get_power_rating, args=(quantiles,))
 
+    # Convert the index to a string representation of the dates
+    df_daily_energy_Wh.index = df_daily_energy_Wh.index.strftime('%Y-%m-%d')
+
     return df_daily_energy_Wh

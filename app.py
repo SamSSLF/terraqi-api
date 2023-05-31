@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, abort
-from functions import interp_inputs, get_windfc, is_outside_uk, get_daily_windfc
+from functions import interp_inputs, get_windfc, is_outside_uk, get_daily_windfc, get_daily_energy
 
 app = Flask(__name__)
 
@@ -39,7 +39,7 @@ def get_daily_fc():
 
 
 @app.route('/windfc/daily/energy', methods=['POST'])
-def get_daily_energy():
+def get_daily_energyfc():
     latitude = request.json['lat']
     longitude = request.json['lon']
     turbine_rated_power = request.json['turbine_rated_power']
@@ -49,8 +49,8 @@ def get_daily_energy():
 
     df = interp_inputs(latitude, longitude)
     df = get_windfc(df)
-    result = get_daily_windfc(df, turbine_rated_power).to_json(orient='index')
-    
+    result = get_daily_energy(df, turbine_rated_power).to_json(orient='index')
+
     return result
 
 
