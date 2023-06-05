@@ -158,12 +158,9 @@ def get_daily_windfc(df):
     # Convert the daily_average Series to a DataFrame
     daily_average_df = daily_average.to_frame(name='average')
 
-    # Compute quantiles of daily average capacity factor
-    quantiles = daily_average_df['average'].quantile([0.2, 0.4, 0.6, 0.8])
-
     # Assign power ratings based on average values
-    daily_average_df['power_rating'] = daily_average_df['average'].apply(
-        get_power_rating, args=(quantiles,))
+    daily_average_df['power_rating'] = pd.cut(daily_average_df['average'], bins=[
+                                              0, 0.2, 0.4, 0.6, 0.8, 1.0], labels=[1, 2, 3, 4, 5])
 
     # Convert the index to a string representation of the dates
     daily_average_df.index = daily_average_df.index.strftime('%Y-%m-%d')
@@ -190,13 +187,12 @@ def get_daily_energy(df, turbine_rated_power):
     # Convert Series to Dataframe
     df_daily_energy_Wh = df_daily_energy_Wh.to_frame('AvgEnergy_Wh')
 
-    # Compute quantiles of daily average capacity factor
-    quantiles = df_daily_energy_Wh['AvgEnergy_Wh'].quantile(
-        [0.2, 0.4, 0.6, 0.8])
+    # Resample the capacity factor to daily frequency and calculate the mean
+    daily_average_fc = df['windpower_fc'].resample('D').mean()
 
-    # Add a new column with power rating
-    df_daily_energy_Wh['power_rating'] = df_daily_energy_Wh['AvgEnergy_Wh'].apply(
-        get_power_rating, args=(quantiles,))
+    # Assign power ratings based on average capacity factor values
+    df_daily_energy_Wh['power_rating'] = pd.cut(
+        daily_average_fc, bins=[0, 0.2, 0.4, 0.6, 0.8, 1.0], labels=[1, 2, 3, 4, 5])
 
     # Convert the index to a string representation of the dates
     df_daily_energy_Wh.index = df_daily_energy_Wh.index.strftime('%Y-%m-%d')
